@@ -7,27 +7,34 @@ Reads in a csv file and produces a tex file of acronyms compatible with the LaTe
 """
 
 import argparse
+from acronym import Acronym
+import datetime
+import os.path
+
+
+
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--inFile", help="The input file, should be a csv")
-parser.add_argument("--outFile", help="The output file location")
+parser.add_argument("input", help="The input csv file")
+parser.add_argument("-o",  help="The output file location; if no location is given, a file is generated in the same directory as the input file")
 
 args = parser.parse_args()
 
 print("+++ CSV2GPL +++" )
 print("+++ Matt Luckcuck 2018 +++")
 
-#inputFile = args.inFile
-#outputFile = args.outFile
+inputFile = args.input
+outputFile = args.o
 
-inputFile = "Acronyms.csv"
-outputFile = "Acronyms.tex"
+if not outputFile:
+    inputFileName = os.path.splitext(inputFile)[0]
+    outputFile = inputFileName + ".tex"
 
 print("+++ Converting " + inputFile + " to " + outputFile)
 
 
 def openInputFile(inputFile):
-    print("+++ Opning Input File "+inputFile+" +++")
+    
     try:
         csvFile = open(inputFile, "r")
         return csvFile
@@ -36,7 +43,7 @@ def openInputFile(inputFile):
     
 
 def openOutputFile(outputFile):
-    print("+++ Opening Output File " + outputFile + " +++")
+    
     try:
         file = open(outputFile, "w")
         return file
@@ -45,41 +52,51 @@ def openOutputFile(outputFile):
 
 def processFile(csvFile):
     print("+++ Processing CSV File +++")
-
-    glsFile = openOutputFile(outputFile)
     
     firstLine = True
-    
+    glsList = []
     with csvFile:
         for line in csvFile:
             if firstLine:
                 firstLine = False
-            else:
-                processRow(line, glsFile)
+            elif len(line)>2: 
+                glsList.append(processRow(line))
 
-    glsFile.close()
+    return glsList
+
+    
     
 
-def processRow(pair, glsFile):
-    print("+++ Process Row +++")
+def processRow(pair):
+    
     pair = pair.split(",", maxsplit=1)
-    acronym = pair[0].strip("\n").replace("&","and")    
-    description = pair[1].strip("\n").strip('\"')
-    
-    glsLine = "\\newacronym{" + acronym.lower() + "}{" + acronym + "}{" + description + "}\n"
+    acronymString = pair[0] 
+    description = pair[1]
 
-    writeLine(glsLine, glsFile)
-
-def writeLine(glsLine, glsFile):
-    print("+++ Writing " + glsLine + "+++")
     
-    glsFile.write(glsLine)
+    gls = Acronym(acronymString, description)
+
+    return gls
+    
+    
+def writeFile(glsList):
+    print("+++ Writing File +++")
+    glsFile = openOutputFile(outputFile)
+    glsFile.write("%Converted by CSV2GLS from " + inputFile+"\n")
+    glsFile.write("%Converted on " + str(datetime.datetime.today())+"\n" )
+
+    for i in glsList:
+        glsFile.write(i.getGLSLine())
+
+    
+    glsFile.close()
 
 
 csvFile = openInputFile(inputFile)
 
-processFile(csvFile)
+glsList = processFile(csvFile)
 
+writeFile(glsList)
 
 csvFile.close()
 

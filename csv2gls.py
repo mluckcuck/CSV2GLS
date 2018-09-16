@@ -15,6 +15,7 @@ parser.add_argument("--outFile", help="The output file location")
 args = parser.parse_args()
 
 print("+++ CSV2GPL +++" )
+print("+++ Matt Luckcuck 2018 +++")
 
 #inputFile = args.inFile
 #outputFile = args.outFile
@@ -24,51 +25,64 @@ outputFile = "Acronyms.tex"
 
 print("+++ Converting " + inputFile + " to " + outputFile)
 
-TEMP_FILE = "csv2gpl-"+inputFile.strip(".csv")+".temp"
 
-def readInputFile(inputFile):
-    print("+++ Reading Input File +++")
-    csvFile = open(inputFile, "r")
-    return csvFile
+def openInputFile(inputFile):
+    print("+++ Opning Input File "+inputFile+" +++")
+    try:
+        csvFile = open(inputFile, "r")
+        return csvFile
+    except:
+        print("exception opening file " + inputFile)
+    
+
+def openOutputFile(outputFile):
+    print("+++ Opening Output File " + outputFile + " +++")
+    try:
+        file = open(outputFile, "w")
+        return file
+    except:
+        print("exception opening file " + f)
 
 def processFile(csvFile):
-    print("+++ Process File +++")
+    print("+++ Processing CSV File +++")
 
-    tempFile = open(TEMP_FILE, "w")
-
+    glsFile = openOutputFile(outputFile)
+    
     firstLine = True
-    for line in csvFile:
-        if firstLine:
-            firstLine = False
-        else:
-            processRow(line, tempFile)
-
-    tempFile.close()
     
-
-def processRow(pair, outputFile):
-    print("+++ Process Row +++")
-    
-    acronym = pair[0]
-    description = pair[1]
-
-    glsLine = "\newacronym{" + acronym.lower() + "}{" + acronym + "}{" + description + "}"
-
-    outputFile.write(glsLine)
-
-def writeOutputFile(outputFile):
-    print("+++ Writing Output +++")
-          
-    glsFile = open(outputFile,"w")
-
-    glsFile.write(TEMP_FILE)
+    with csvFile:
+        for line in csvFile:
+            if firstLine:
+                firstLine = False
+            else:
+                processRow(line, glsFile)
 
     glsFile.close()
+    
 
-csvFile = readInputFile(inputFile)
+def processRow(pair, glsFile):
+    print("+++ Process Row +++")
+    pair = pair.split(",", maxsplit=1)
+    acronym = pair[0].strip("\n").replace("&","and")    
+    description = pair[1].strip("\n").strip('\"')
+    
+    glsLine = "\\newacronym{" + acronym.lower() + "}{" + acronym + "}{" + description + "}\n"
+
+    writeLine(glsLine, glsFile)
+
+def writeLine(glsLine, glsFile):
+    print("+++ Writing " + glsLine + "+++")
+    
+    glsFile.write(glsLine)
+
+
+csvFile = openInputFile(inputFile)
 
 processFile(csvFile)
 
-writeOutputFile(outputFile)
+
+csvFile.close()
+
+
 
 print("+++ Done +++")

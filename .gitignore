@@ -1,2 +1,18 @@
 
 *.temp
+
+*.bak
+
+*.fls
+
+*.glo
+
+*.log
+
+*.gz
+
+*.fdb_latexmk
+
+*.xdy
+
+*.aux

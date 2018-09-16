@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """
 CV2GLS
 

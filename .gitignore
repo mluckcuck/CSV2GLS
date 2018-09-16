@@ -16,3 +16,9 @@
 *.xdy
 
 *.aux
+
+__pycache__/
+
+*.tex
+
+*.pdf
